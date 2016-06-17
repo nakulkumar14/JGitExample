@@ -3,8 +3,11 @@ package com.company;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.treewalk.TreeWalk;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,18 +35,50 @@ public class Main {
             System.out.println("Checkout branch : " + git.checkout().setName("testBranch").call().getName());
 
             // Add all files.
-            System.out.println("Adding all untrakced files...");
-            System.out.println(git.add().addFilepattern(".").call());
+//            System.out.println("Adding all untrakced files...");
+//            System.out.println(git.add().addFilepattern(".").call());
 
             // Add remote.
-            System.out.println("Adding remote...");
-            StoredConfig config = git.getRepository().getConfig();
-            config.setString("remote", "origin", "url", "https://github.com/nakulkumar14/JGitExample");
-            config.save();
+//            System.out.println("Adding remote...");
+//            StoredConfig config = git.getRepository().getConfig();
+//            config.setString("remote", "origin", "url", "https://github.com/nakulkumar14/JGitExample");
+//            config.save();
 
-            RevCommit commit = git.commit().setMessage("Push example files").call();
-            System.out.println("Commit : " + commit.getName() + ", commit id  : " + commit.getId());
-            System.out.println("Status : " + git.status().call().isClean());
+            // Commit added files with message.
+//            RevCommit commit = git.commit().setMessage("Push example files").call();
+//            System.out.println("Commit : " + commit.getName() + ", commit id  : " + commit.getId());
+//            System.out.println("Status : " + git.status().call().isClean());
+
+            // Push the commits.
+//            Iterable<PushResult> iterable = git.push().call();
+//            PushResult pushResult = iterable.iterator().next();
+//            RemoteRefUpdate.Status status = pushResult.getRemoteUpdate("refs/heads/testBranch").getStatus();
+//            System.out.println(status);
+
+            // List files in commit.
+            Ref head = git.getRepository().getRef("HEAD");
+
+            // a RevWalk allows to walk over commits based on some filtering that is
+            // defined
+            RevWalk walk = new RevWalk(git.getRepository());
+
+            RevCommit commit = walk.parseCommit(head.getObjectId());
+            RevTree tree = commit.getTree();
+            System.out.println("Having tree: " + tree);
+            TreeWalk treeWalk = new TreeWalk(git.getRepository());
+            treeWalk.addTree(tree);
+            treeWalk.setRecursive(false);
+            int count = 0;
+            while (treeWalk.next()) {
+                if (treeWalk.isSubtree()) {
+                    System.out.println("dir: " + treeWalk.getPathString());
+                    treeWalk.enterSubtree();
+                } else {
+                    count++;
+                    System.out.println("file: " + treeWalk.getPathString());
+                }
+            }
+            System.out.println("Length : " + count);
 
 //            File folder = new File("/home/nakulkumar/Workspace/JGitExample/");
 //            File[] listOfFiles = folder.listFiles();
