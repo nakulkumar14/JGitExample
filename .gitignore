@@ -1,3 +1,12 @@
-.idea/
-target/
-test/
+.idea
+*.log*
+*.iml
+*.patch
+*.iws
+*.ipr
+*.ids
+*jar
+lib
+classes
+target
+out
